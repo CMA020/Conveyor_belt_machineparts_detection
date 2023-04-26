@@ -1,10 +1,3 @@
-# Type help("robodk.robolink") or help("robodk.robomath") for more information
-# Press F5 to run the script
-# Documentation: https://robodk.com/doc/en/RoboDK-API.html
-# Reference:     https://robodk.com/doc/en/PythonAPI/robodk.html
-# Note: It is not required to keep a copy of this file, your Python script is saved with your RDK project
-
-# You can also use the new version of the API:
 from robodk import robolink    # RoboDK API
 from robodk import robomath 
 import cv2
@@ -18,16 +11,12 @@ from ultralytics.yolo.utils import DEFAULT_CFG, ROOT, ops
 from ultralytics.yolo.utils.plotting import save_one_box  # Robot toolbox
 global img
 z=[]
-# RDK = RoboDK.RoboDK()
-
 class DetectionPredictor(BasePredictor):
-
     def preprocess(self, img):
         img = (img if isinstance(img, torch.Tensor) else torch.from_numpy(img)).to(self.model.device)
         img = img.half() if self.model.fp16 else img.float()  # uint8 to fp16/32
         img /= 255  # 0 - 255 to 0.0 - 1.0
         return img
-
     def postprocess(self, preds, img, orig_imgs):
         xscale=1660/640
         yscale=1250/480
@@ -41,7 +30,6 @@ class DetectionPredictor(BasePredictor):
                                         agnostic=self.args.agnostic_nms,
                                         max_det=self.args.max_det,
                                         classes=self.args.classes)
-
         results = []
         for i, pred in enumerate(preds):
             orig_img = orig_imgs[i] if isinstance(orig_imgs, list) else orig_imgs
@@ -67,10 +55,7 @@ class DetectionPredictor(BasePredictor):
                     z.append(a)
                     cv2.putText(img=det_img, text=str(a), org=(x, y), fontFace=cv2.FONT_HERSHEY_TRIPLEX, fontScale=0.25,
                                 color=(0, 0, 0), thickness=1)
-
                     cv2.circle(det_img,(x,y), 20, (0, 0, 0), 4)
-            
-            # cv2.circle(det_img, (379,251), 20,(0,0,0),4)
             cv2.imshow('Processed Image', det_img)
             cv2.waitKey(10000)
             sorted_z = sorted(z, key=lambda x: x[2])
@@ -78,10 +63,8 @@ class DetectionPredictor(BasePredictor):
         return results
 def predict(cfg=DEFAULT_CFG, use_python=False):
     global img
-    model ="C:\\Users\\n\\Downloads\\weight2.pt" #cfg.model or 'yolov8n.pt'
+    model ="C:\\Users\\n\\Downloads\\weight2.pt" #Change according to location of file on your system
     source = img
-        #else 'https://ultralytics.com/images/bus.jpg'
-
     args = dict(model=model, source=source)
     if use_python:
         from ultralytics import YOLO
@@ -89,18 +72,11 @@ def predict(cfg=DEFAULT_CFG, use_python=False):
     else:
         predictor = DetectionPredictor(overrides=args)
         predictor.predict_cli()
-# Forward and backwards compatible use of the RoboDK API:
-# Remove these 2 lines to follow python programming guidelines
-# Link to RoboDK
-# RDK = Robolink()
 RDK = robolink.Robolink()
 cam_item = RDK.Item('camera', robolink.ITEM_TYPE_CAMERA)
-# Get the camera object by name
+
 cam_item.setParam('Open', 1)
 while cam_item.setParam('isOpen') == '1':
-
-    #----------------------------------
-    # Method 1: Get the camera image, by socket
     img_socket = None
     bytes_img = RDK.Cam2D_Snapshot('', cam_item)
     if isinstance(bytes_img, bytes) and bytes_img != b'':
