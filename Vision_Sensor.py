@@ -12,6 +12,7 @@ from ultralytics.yolo.utils.plotting import save_one_box  # Robot toolbox
 
 global img
 z = []
+flag=0
 
 
 # RDK = RoboDK.RoboDK()
@@ -26,6 +27,7 @@ class DetectionPredictor(BasePredictor):
         return img
 
     def postprocess(self, preds, img, orig_imgs):
+        joint_angles=[]
         z=[]
         xscale = 1660 / 640
         yscale = 1250 / 480
@@ -83,9 +85,15 @@ class DetectionPredictor(BasePredictor):
                         [-0.000000, -0.000000, 1.000000, s],
                         [0.000000, -1.000000, -0.000000, m],
                         [0.000000, 0.000000, 0.000000, 1.000000]])
+            string_to_write = sorted_z[0][0]
 
+            # Open the file in write mode
+            with open("filename.txt", "w") as file:
+                # Write the string to the file
+                file.write(string_to_write)
             joint_angles = robot.SolveIK(pose)
             print(joint_angles)
+            print(string_to_write)
             robot.MoveJ(joint_angles)
 
         return results
@@ -93,7 +101,7 @@ class DetectionPredictor(BasePredictor):
 
 def predict(cfg=DEFAULT_CFG, use_python=False):
     global img
-    model = "C:\\Users\\n\\Downloads\\weight2.pt"  # Link your weight file ie '.pt' file
+    model = "C:\\Users\\n\\Downloads\\weight3.pt"  # cfg.model or 'yolov8n.pt'
     source = img
     # else 'https://ultralytics.com/images/bus.jpg'
 
@@ -131,7 +139,8 @@ while cam_item.setParam('isOpen') == '1':
     predict()
     cv2.waitKey(10000)
     key = cv2.waitKey(1)
-    if key == 27:
+    flag=1
+    if flag == 1:
         break  # User pressed ESC, exit
     if cv2.getWindowProperty("img", cv2.WND_PROP_VISIBLE) < 1:
         break  # User killed the main window, exit
